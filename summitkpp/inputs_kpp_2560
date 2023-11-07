@@ -1,0 +1,151 @@
+#################################
+######### BOX PARAMETERS ########
+#################################
+max_step = 500
+# stop_time = 3.72930e-11
+amr.n_cell = 128 128 880
+amr.max_grid_size = 128
+amr.blocking_factor = 8
+amr.max_level = 0
+#amr.plot_int = -1
+geometry.coord_sys   = 0
+geometry.is_periodic = 1 1 0
+#added: geometry dims
+geometry.dims = 3
+# physical domain when running in the lab frame
+geometry.prob_lo = -0.00016091428571428574 -0.00016091428571428574 -0.00016018285714285716
+geometry.prob_hi = 0.00016091428571428574 0.00016091428571428574 0.0
+
+#################################
+############ NUMERICS ###########
+#################################
+warpx.verbose = 1
+algo.current_deposition = esirkepov
+algo.charge_deposition = standard
+algo.field_gathering = energy-conserving
+algo.particle_pusher = vay
+algo.maxwell_solver = ckc
+#added: algo.particle_shape
+#interpolation.nox = 3
+#interpolation.noy = 3
+#interpolation.noz = 3
+algo.particle_shape = 3
+warpx.use_filter = 1
+warpx.filter_npass_each_dir = 1 1 4
+warpx.cfl = .9999
+#warpx.do_pml = 0
+#found no boundary.field_lo
+warpx.do_dynamic_scheduling = 1
+#warpx.load_balance_int = -1
+algo.load_balance_intervals = -1
+warpx.field_io_nfiles = 128
+warpx.particle_io_nfiles = 128
+# Moving window
+warpx.do_moving_window = 1
+warpx.moving_window_dir = z
+warpx.moving_window_v = 1.0 # in units of the speed of light
+
+#################################
+####### BOOST PARAMETERS ########
+#################################
+warpx.gamma_boost = 30.0
+warpx.boost_direction = z
+warpx.do_boosted_frame_diagnostic = 0
+warpx.do_boosted_frame_fields = 0
+#warpx.num_snapshots_lab = 41
+#warpx.dt_snapshots_lab = 3.335640951981521e-11 # Every 1 cm
+
+#################################
+############ PALSMA #############
+#################################
+particles.nspecies = 3
+particles.species_names = electrons ions beam
+particles.use_fdtd_nci_corr = 1
+particles.rigid_injected_species = beam
+
+electrons.charge = -q_e
+electrons.mass = m_e
+electrons.injection_style = NUniformPerCell
+electrons.num_particles_per_cell_each_dim = 1 1 1
+electrons.momentum_distribution_type = "gaussian"
+electrons.xmin = -150.e-6
+electrons.xmax =  150.e-6
+electrons.ymin = -150.e-6
+electrons.ymax =  150.e-6
+electrons.zmin = -1.
+electrons.zmax = 0.383
+electrons.profile = constant
+electrons.density = 1.7e23
+electrons.do_continuous_injection = 1
+# electrons.profile                 = "custom"
+# #         custom_profile_params = ramp_up   plateau   ramp_down   rc       n0
+# electrons.custom_profile_params = .02       .36       .003        50.e-6   1.7e23
+
+ions.charge = q_e
+ions.mass = m_p
+ions.injection_style = NUniformPerCell
+ions.num_particles_per_cell_each_dim = 1 1 1
+ions.momentum_distribution_type = "gaussian"
+ions.xmin = -150.e-6
+ions.xmax =  150.e-6
+ions.ymin = -150.e-6
+ions.ymax =  150.e-6
+ions.zmin = -1.
+ions.zmax = 0.383
+ions.profile = constant
+ions.density = 1.7e23
+# ions.profile                 = "custom"
+# #    custom_profile_params = ramp_up   plateau   ramp_down   rc       n0
+# ions.custom_profile_params = .02       .36       .003        50.e-6   1.7e23
+ions.do_continuous_injection = 1
+
+beam.charge = -q_e
+beam.mass = m_e
+beam.injection_style = "gaussian_beam"
+beam.x_rms = 6.e-7
+beam.y_rms = 6.e-7
+beam.z_rms = 3.e-6
+beam.x_m = 0.
+beam.y_m = 0.
+beam.z_m = -107.e-6
+beam.npart = 50000
+beam.q_tot = -1.5e-10
+beam.momentum_distribution_type = "gaussian"
+beam.ux_m = 0.
+beam.uy_m = 0.
+beam.uz_m = 1956.9469069265976
+beam.ux_th = 0.4166666666666667
+beam.uy_th = 0.4166666666666667
+beam.uz_th = 39.138943248532286
+beam.zinject_plane = 0.e-6
+beam.rigid_advance = true
+beam.projected = true
+beam.focused = false
+
+#################################
+############# LASER #############
+#################################
+lasers.nlasers     = 1
+lasers.names       = laser1
+
+laser1.profile      = Gaussian
+laser1.position     = 0. 0. -1.e-6 # This point is on the laser plane
+laser1.direction    = 0. 0. 1.      # The plane normal direction
+laser1.polarization = 0. 1. 0.      # The main polarization vector
+laser1.e_max        = 6.82274e12       # Maximum amplitude of the laser field (in V/m)
+laser1.profile_waist = 50.e-6       # The waist of the laser (in meters)
+laser1.profile_duration = 7.33841e-14   # The duration of the laser (in seconds)
+laser1.profile_t_peak = 1.467682e-13    # The time at which the laser reaches its peak (in seconds)
+laser1.profile_focal_distance = 0.00875  # Focal distance from the antenna (in meters)
+laser1.wavelength = 0.8e-6         # The wavelength of the laser (in meters)
+laser1.do_continuous_injection = 0
+
+# Diagnostics
+# Diagnostics
+diagnostics.diags_names = diagk1
+diagk1.intervals = 50
+diagk1.num_snapshots_lab = 41
+diagk1.dt_snapshots_lab = 3.335640951981521e-11 # Every 1 cm
+diagk1.diag_type = Full
+diagk1.format = openpmd
+diagk1.openpmd_backend = bp
