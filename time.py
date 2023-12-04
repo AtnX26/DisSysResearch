@@ -1,7 +1,10 @@
 from openpmd_viewer import OpenPMDTimeSeries
-ts = OpenPMDTimeSeries('./diagk2')
-
 import time
+
+tic = time.perf_counter()
+ts = OpenPMDTimeSeries('/home/cc/diagk2')
+toc = time.perf_counter()
+print("time elapsed for OpenPMDTimeSeries:", toc-tic)
 
 tic = time.perf_counter()
 z_selected, uz_selected = ts.get_particle( ['z', 'uz'], species='electrons', iteration=0)
@@ -12,7 +15,7 @@ print("z particles in total:", len(z_selected))
 print("uz in total:", len(uz_selected))
 
 tic = time.perf_counter()
-z_selected, uz_selected = ts.get_particle( ['z', 'uz'], species='electrons', iteration=0, select={'uz':[-10, 10],'z':[-10,10]} )
+z_selected, uz_selected = ts.get_particle( ['z', 'uz'], species='electrons', iteration=0, select={'uz':[-30, 10],'z':[-10,10]} )
 toc = time.perf_counter()
 
 print("time elapsed with selection:", toc-tic)
