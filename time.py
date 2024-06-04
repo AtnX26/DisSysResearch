@@ -1,6 +1,6 @@
 from openpmd_viewer import OpenPMDTimeSeries
 import time
-ts = OpenPMDTimeSeries('/home/dxu03/bp/new_adios')
+ts = OpenPMDTimeSeries('/home/dxu03/warpx_run/diags/diagu1')
 #ts = OpenPMDTimeSeries('/home/dxu03/warpx_run/diags/diagu')
 '''tic = time.perf_counter()
 ts = OpenPMDTimeSeries('/home/cc/diagk2')
@@ -26,14 +26,15 @@ print("uz in total:", len(uz_selected))
 from openpmd_viewer import ParticleTracker
 # Select particles to be tracked, at iteration 300
 tic = time.perf_counter()
-pt = ParticleTracker(ts, iteration=0, select={'uz':[-30, 10]}, species='electrons')
+pt = ParticleTracker(ts, iteration=0, select={'uz':[0, 10]}, species='electrons')
 toc = time.perf_counter()
 t1 = toc-tic
-print("time elapsed for ParticleTracker that selects all the points:", t1)
+print("time elapsed for ParticleTracker that selects about half of the points:", t1)
 tic = time.perf_counter()
 z_selected, uz_selected = ts.get_particle( ['z', 'uz'], species='electrons', iteration=0, select=pt )
 toc = time.perf_counter()
 t2 = toc-tic
+print(len(z_selected))
 print("time elapsed for get_particle that selects the points from pt:", t2)
 print("Total time:", t1+t2)
 

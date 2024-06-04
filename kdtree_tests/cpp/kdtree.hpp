@@ -25,6 +25,8 @@ struct KdNode {
   CoordPoint point;
   void* data;
   int index;
+  
+  //constructor for KdNode: a vector for coordination, a pointer to data, and an index
   KdNode(const CoordPoint& p, void* d = NULL, int i = -1) {
     point = p;
     data = d;
@@ -32,6 +34,8 @@ struct KdNode {
   }
   KdNode() { data = NULL; }
 };
+
+
 typedef std::vector<KdNode> KdNodeVector;
 
 // base function object for search predicate in knn search

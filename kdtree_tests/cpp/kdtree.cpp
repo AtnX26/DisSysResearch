@@ -20,7 +20,7 @@ namespace Kdtree {
 // function object for comparing only dimension d of two vecotrs
 //--------------------------------------------------------------
 class compare_dimension {
- public:
+ public:	 
   compare_dimension(size_t dim) { d = dim; }
   bool operator()(const KdNode& p, const KdNode& q) {
     return (p.point[d] < q.point[d]);
@@ -174,23 +174,32 @@ KdTree::~KdTree() {
   if (root) delete root;
   delete distance;
 }
+
+// Constructor with distance type
 // distance_type can be 0 (Maximum), 1 (Manhatten), or 2 (Euklidean [squared])
+// needs an input of a vector that stores all the nodes
 KdTree::KdTree(const KdNodeVector* nodes, int distance_type /*=2*/) {
   size_t i, j;
   double val;
+
   // copy over input data
   if (!nodes || nodes->empty())
     throw std::invalid_argument(
         "kdtree::KdTree(): argument nodes must not be empty");
   dimension = nodes->begin()->point.size();
   allnodes = *nodes;
+
   // initialize distance values
   distance = NULL;
   this->distance_type = -1;
   set_distance(distance_type);
+  
   // compute global bounding box
   lobound = nodes->begin()->point;
   upbound = nodes->begin()->point;
+  
+  // iterate through the whole list and find the lower and upper bound of the array
+  // (might improve here)
   for (i = 1; i < nodes->size(); i++) {
     for (j = 0; j < dimension; j++) {
       val = allnodes[i].point[j];
@@ -198,10 +207,12 @@ KdTree::KdTree(const KdNodeVector* nodes, int distance_type /*=2*/) {
       if (upbound[j] < val) upbound[j] = val;
     }
   }
-  // build tree recursively
+
+  // build tree recursively. base case: include all points
   root = build_tree(0, 0, allnodes.size());
 }
 
+// set distance metric
 // distance_type can be 0 (Maximum), 1 (Manhatten), or 2 (Euklidean [squared])
 void KdTree::set_distance(int distance_type,
                           const DoubleVector* weights /*=NULL*/) {
@@ -227,23 +238,35 @@ kdtree_node* KdTree::build_tree(size_t depth, size_t a, size_t b) {
   kdtree_node* node = new kdtree_node();
   node->lobound = lobound;
   node->upbound = upbound;
+  
+  // the cutting dimension is determined by alternating: x, y, z, x, y, z, ...
   node->cutdim = depth % dimension;
+  
+  //if the upper index is close to the lower: we just locate the lowest point to the according data in the vector
   if (b - a <= 1) {
     node->dataindex = a;
     node->point = allnodes[a].point;
-  } else {
+  } 
+  else {
+    //find the middle point of the vector so that we build the ideal tree from the midpoint
     m = (a + b) / 2;
     std::nth_element(allnodes.begin() + a, allnodes.begin() + m,
                      allnodes.begin() + b, compare_dimension(node->cutdim));
     node->point = allnodes[m].point;
     cutval = allnodes[m].point[node->cutdim];
     node->dataindex = m;
+
+    // Recursively build left subtree
+    // skip if the subtree is <1
     if (m - a > 0) {
       temp = upbound[node->cutdim];
       upbound[node->cutdim] = cutval;
       node->loson = build_tree(depth + 1, a, m);
       upbound[node->cutdim] = temp;
     }
+
+    // Recursively build right subtree
+    // skip if the subtree is <1
     if (b - m > 1) {
       temp = lobound[node->cutdim];
       lobound[node->cutdim] = cutval;
@@ -263,6 +286,8 @@ kdtree_node* KdTree::build_tree(size_t depth, size_t a, size_t b) {
 // derived from KdNodePredicate. When Null (default, no search
 // predicate is applied).
 //--------------------------------------------------------------
+
+//not used in our range search
 void KdTree::k_nearest_neighbors(const CoordPoint& point, size_t k,
                                  KdNodeVector* result,
                                  KdNodePredicate* pred /*=NULL*/) {
@@ -454,6 +479,15 @@ bool KdTree::ball_within_bounds(const CoordPoint& point, double dist,
       return false;
   return true;
 }
+
+
+
+
+//-----------------------------------------
+// Rectangle Range Searching
+//-----------------------------------------
+
+//calls a overloaded range_search function
 void KdTree::rectangle_range_search(double x_min, double x_max, double y_min, double y_max, double z_min, double z_max, KdNodeVector* result) {
     CoordPoint min_point = {x_min, y_min, z_min};
     CoordPoint max_point = {x_max, y_max, z_max};
@@ -462,6 +496,8 @@ void KdTree::rectangle_range_search(double x_min, double x_max, double y_min, do
     range_search(min_point, max_point, root, result);
 }
 
+
+// a recursive search algorithm: if the searching range is within the subtree's min and max, continue to push back results
 void KdTree::range_search(const CoordPoint& min_point, const CoordPoint& max_point, kdtree_node* node, KdNodeVector* result) {
     if (node == nullptr) {
         return;
@@ -482,6 +518,8 @@ void KdTree::range_search(const CoordPoint& min_point, const CoordPoint& max_poi
     }
 }
 
+
+// Check if the upbound and lobound of the current parent node fit the min/max value inquired
 bool KdTree::bounds_overlap_rectangle(const CoordPoint& min_point, const CoordPoint& max_point, kdtree_node* node) {
     for (size_t i = 0; i < dimension; i++) {
         if (node->upbound[i] < min_point[i] || node->lobound[i] > max_point[i]) {
@@ -493,6 +531,7 @@ bool KdTree::bounds_overlap_rectangle(const CoordPoint& min_point, const CoordPo
     return true;
 }
 
+// If the node completely falls betweeen the mean/max, just return true so that the data will be saved
 bool KdTree::node_within_rectangle(const CoordPoint& min_point, const CoordPoint& max_point, const CoordPoint& point) {
     for (size_t i = 0; i < dimension; i++) {
         if (point[i] < min_point[i] || point[i] > max_point[i]) {

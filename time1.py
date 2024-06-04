@@ -4,25 +4,34 @@ import time
 #ts = OpenPMDTimeSeries('/home/dxu03/warpx_run/diags/diagu')
 tic = time.perf_counter()
 #ts = OpenPMDTimeSeries('/home/dxu03/warpx_run/diags/diagu')
-ts = OpenPMDTimeSeries('/home/dxu03/bp/new_adios')
+ts = OpenPMDTimeSeries('/home/dxu03/warpx_run/diags/diagu1')
 toc = time.perf_counter()
 print("time elapsed for OpenPMDTimeSeries:", toc-tic)
 
 tic = time.perf_counter()
-z_selected, uz_selected = ts.get_particle( ['z', 'uz'], species='electrons', iteration=0)
+x_selected, y_selected, z_selected = ts.get_particle( ['x', 'y', 'z'], species='electrons', iteration=0)
 toc = time.perf_counter()
 
 print("time elapsed without selection:", toc-tic)
 print("z particles in total:", len(z_selected))
-print("uz in total:", len(uz_selected))
+print("x in total:", len(x_selected))
 
 tic = time.perf_counter()
-z_selected, uz_selected = ts.get_particle( ['z', 'uz'], species='electrons', iteration=0, select={'uz':[-30, 10],'z':[-10,10]} )
+x_selected, y_selected, z_selected = ts.get_particle( ['x', 'y', 'z'], species='electrons', iteration=0, select={'x':[0, 10], 'y':[0,10], 'z':[0,10]} )
 toc = time.perf_counter()
 
-print("time elapsed with selection:", toc-tic)
+print("time elapsed with half selection:", toc-tic)
 print("z particles selected:", len(z_selected))
-print("uz selected:", len(uz_selected))
+print("x selected:", len(x_selected))
+
+tic = time.perf_counter()
+x_selected, y_selected, z_selected = ts.get_particle( ['x', 'y', 'z'], species='electrons', iteration=0, select={'x':[-10, 10],'y':[-10, 10], 'z':[-10,10]} )
+toc = time.perf_counter()
+
+print("time elapsed with full selection:", toc-tic)
+print("z particles selected:", len(z_selected))
+print("x selected:", len(x_selected))
+
 '''
 from openpmd_viewer import ParticleTracker
 # Select particles to be tracked, at iteration 300
